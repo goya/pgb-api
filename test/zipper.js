@@ -71,7 +71,7 @@ describe('zipper', () => {
         let eventEmitter = new (require('events'))()
         let lastProgress = null
 
-        eventEmitter.on('zip/progress', (evt) => {
+        eventEmitter.on('zip/write', (evt) => {
           lastProgress = evt
         })
 

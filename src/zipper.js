@@ -68,7 +68,7 @@ const zipDir = (dir, dest, eventEmitter) => {
     stream.on('error', reject)
     zip.outputStream.on('error', reject)
     zip.outputStream.pipe(stream).once('close', () => {
-      emit('zip/progress', {
+      emit('zip/write', {
         size,
         file,
         pos: size,
@@ -89,7 +89,7 @@ const zipDir = (dir, dest, eventEmitter) => {
         }
       }
 
-      emit('zip/progress', {
+      emit('zip/write', {
         size,
         file,
         pos: cumulativeSize[fileIdx],
