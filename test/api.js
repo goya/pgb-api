@@ -1,18 +1,18 @@
 const restClient = require('../src/rest-client')
+const zipper = require('../src/zipper')
 jest.mock('../src/rest-client')
 jest.mock('../src/zipper')
 const apiClient = require('../src/api')
-const zipper = require('../src/zipper')
 const fs = require('fs')
 const os = require('os')
 const merge = require('../src/misc').merge
 let api = apiClient()
 
 const ret = { foo: 'bar' }
-restClient.get.mockReturnValue(Promise.resolve(ret))
-restClient.del.mockReturnValue(Promise.resolve(ret))
-restClient.post.mockReturnValue(Promise.resolve(ret))
-restClient.put.mockReturnValue(Promise.resolve(ret))
+restClient.get.mockResolvedValue(ret)
+restClient.del.mockResolvedValue(ret)
+restClient.post.mockResolvedValue(ret)
+restClient.put.mockResolvedValue(ret)
 const data = { hydrates: true }
 
 afterEach(() => jest.clearAllMocks())
@@ -92,9 +92,9 @@ describe('api', () => {
     )
 
     test('downloadApp with location', () =>
-      api.downloadApp(12, 'ios', '/foo/bar', 'file.zip').then((val) => {
+      api.downloadApp(12, 'ios', '/foo/bar').then((val) => {
         expect(restClient.get).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/ios',
-          {saveAs: 'file.zip', saveTo: '/foo/bar'})
+          { save: '/foo/bar' })
         expect(val).toEqual(ret)
       })
     )
@@ -102,7 +102,7 @@ describe('api', () => {
     test('downloadApp without location', () =>
       api.downloadApp(12, 'ios').then((val) => {
         expect(restClient.get).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/ios',
-          { saveAs: undefined, saveTo: undefined })
+          { save: undefined })
         expect(val).toEqual(ret)
       })
     )
@@ -248,7 +248,7 @@ describe('api', () => {
       })
 
       test('zip dir and add app with zip location', () => {
-        return api.addApp('/app_to_zip', { zipFilePath: '/zip.zip', hydrates: true }).then((val) => {
+        return api.addApp('/app_to_zip', { zip: '/zip.zip', hydrates: true }).then((val) => {
           let result = restClient.post.mock.calls[0]
           expect(result[0]).toBe('https://build.phonegap.com/api/v1/apps')
           expect(result[1]).toMatchObject({ data })
@@ -258,7 +258,7 @@ describe('api', () => {
       })
 
       test('zip dir and add app with zip directory', () => {
-        return api.addApp('/app_to_zip', { zipFilePath: '/', hydrates: true }).then((val) => {
+        return api.addApp('/app_to_zip', { zip: '/', hydrates: true }).then((val) => {
           let result = restClient.post.mock.calls[0]
           expect(result[0]).toBe('https://build.phonegap.com/api/v1/apps')
           expect(result[1]).toMatchObject({ data })
@@ -284,8 +284,8 @@ describe('api', () => {
             expect(result[1]).toMatchObject({ data })
             expect(val).toEqual(ret)
             expect(result[1].data.file.path).toMatch(/^\/tmp\/pgb-.*\.zip$/)
-            expect(debug[0]).toMatch(/Archiving \/app_to_zip to \/tmp\/pgb-.*.zip/)
-            expect(debug[1]).toMatch(/Archive deleted \/tmp\/pgb-.*.zip/)
+            expect(debug[0]).toMatch(/archiving \/app_to_zip to \/tmp\/pgb-.*.zip/)
+            expect(debug[1]).toMatch(/archive deleted \/tmp\/pgb-.*.zip/)
           })
         })
       })

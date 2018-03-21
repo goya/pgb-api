@@ -5,7 +5,7 @@ module.exports = {
   testRegex: '/test/[^/]*.js$',
   coverageDirectory: 'tmp/coverage',
   setupFiles: [
-    '<rootDir>/test/helpers/globals.js',
+    '<rootDir>/test/_helpers/globals.js',
     'jest-plugin-fs/setup'
   ],
   coverageThreshold: {

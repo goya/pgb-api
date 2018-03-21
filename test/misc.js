@@ -1,7 +1,6 @@
 const { merge, mkdirp, TextStream } = require('../src/misc')
 jest.mock('jest-plugin-fs/mock')
 const path = require('path')
-
 const fs = require('fs')
 const { Writable, Readable } = require('stream')
 

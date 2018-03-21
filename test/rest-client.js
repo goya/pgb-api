@@ -1,6 +1,6 @@
 const restClient = require('../src/rest-client')
 const fs = require('fs')
-const server = require('./helpers/fake-server')
+const server = require('./_helpers/fake-server')
 const app = server.listen(3000, '0.0.0.0')
 const reqs = jest.spyOn(server, 'requestLogger')
 const lastReq = () => reqs.mock.calls[reqs.mock.calls.length - 1][0]
@@ -75,22 +75,22 @@ describe('#get', () => {
   )
 
   describe('files', () => {
-    test('should redirect output to pipe if present in saveTo', () =>
-      restClient.get('http://localhost:3000/page1', { saveTo: fs.createWriteStream('/downloaded_file.zip') })
+    test('should redirect output to pipe if present in save', () =>
+      restClient.get('http://localhost:3000/page1', { save: fs.createWriteStream('/downloaded_file.zip') })
         .then(() =>
           expect(fs.existsSync('/downloaded_file.zip')).toBeTruthy()
         )
     )
 
-    test('should save response to file if string specified in saveTo', () =>
-      restClient.get('http://localhost:3000', { saveTo: '/' })
+    test('should save response to file if string specified in save', () =>
+      restClient.get('http://localhost:3000', { save: '/' })
         .then(() =>
           expect(fs.existsSync('/app.download')).toBeTruthy()
         )
     )
 
     test('should save response with custom filename', () =>
-      restClient.get('http://localhost:3000/page1', { saveTo: '/custom_filename' })
+      restClient.get('http://localhost:3000/page1', { save: '/custom_filename' })
         .then(() =>
           expect(fs.existsSync('/custom_filename')).toBeTruthy()
         )
@@ -98,7 +98,7 @@ describe('#get', () => {
 
     test('should save to dir if dir exists', () => {
       fs.mkdirSync('/foo')
-      return restClient.get('http://localhost:3000/page1', { saveTo: '/foo' })
+      return restClient.get('http://localhost:3000/page1', { save: '/foo' })
         .then(() =>
           expect(fs.existsSync('/foo/page1')).toBeTruthy()
         )
@@ -106,7 +106,7 @@ describe('#get', () => {
 
     test('should reject with error if bad dir', (done) => {
       fs.openSync = jest.fn(() => { throw new Error('bad file') })
-      return restClient.get('http://localhost:3000/page1', { saveTo: '/a/b/c' })
+      return restClient.get('http://localhost:3000/page1', { save: '/a/b/c' })
         .then(() => done.fail('save was successful'))
         .catch((e) => {
           expect(e.toString()).toMatch('bad file')

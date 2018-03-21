@@ -76,8 +76,8 @@ class PGBApi {
     return this._del(`/apps/${id}`)
   }
 
-  downloadApp(id, platform, saveTo, saveAs) {
-    return this._get(`/apps/${id}/${platform}`, { saveTo, saveAs })
+  downloadApp(id, platform, save) {
+    return this._get(`/apps/${id}/${platform}`, { save })
   }
 
   buildApp(id, platform) {
@@ -171,8 +171,8 @@ class PGBApi {
   addAppFromDir(id, dir, data) {
     return new Promise((resolve, reject) => {
       let cleanup = false
-      let filePath = data.zipFilePath
-      delete data.zipFilePath
+      let filePath = data.zip
+      delete data.zip
 
       if (!filePath) {
         filePath = path.join(os.tmpdir(), 'pgb-' + Math.random().toString(32).slice(2) + '.zip')
@@ -194,11 +194,11 @@ class PGBApi {
         if (!cleanup) return
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
           fs.unlinkSync(filePath)
-          emit('debug', `Archive deleted ${filePath}`)
+          emit('debug', `archive deleted ${filePath}`)
         }
       }
 
-      emit('debug', `Archiving ${dir} to ${filePath}`)
+      emit('debug', `archiving ${dir} to ${filePath}`)
       zipper.zipDir(dir, filePath, this.defaults.events)
         .then(() => this.addAppFromFile(id, filePath, data))
         .then((app) => {

@@ -82,15 +82,14 @@ const request = (url, opts) => {
         return resolve(request(location, opts))
       }
 
-      // if saveTo is being used:
+      // if save is being used:
       //    if it's a stream pipe response directly to it
-      //    - or create a write stream to the saveTo directory
-      //       with optional saveAs filename
-      if (ctx.opts.saveTo && status === 2) {
-        if (ctx.opts.saveTo instanceof require('stream').Writable) {
-          ctx.output = ctx.opts.saveTo
+      //    - or create a write stream to the save directory
+      if (ctx.opts.save && status === 2) {
+        if (ctx.opts.save instanceof require('stream').Writable) {
+          ctx.output = ctx.opts.save
         } else {
-          let save = getPath(ctx.opts.saveTo)
+          let save = getPath(ctx.opts.save)
           save.filename = decodeURI(save.filename || path.basename(ctx.opts.pathname) || 'app.download')
           ctx.output = path.join(save.directory, save.filename)
 
