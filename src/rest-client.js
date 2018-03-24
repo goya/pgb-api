@@ -10,7 +10,7 @@ const version = require('../package.json').version
 
 const defaultOpts = {
   headers: {
-    'user_agent': `pgb-api/${version} (${process.platform}) node/${process.version}`
+    'User-Agent': `pgb-api/${version} node/${process.version} (${process.platform})`
   }
 }
 
