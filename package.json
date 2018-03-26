@@ -1,6 +1,6 @@
 {
   "name": "pgb-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "nodeJS API to PhoneGap Build",
   "keywords": [
     "PhoneGap",
