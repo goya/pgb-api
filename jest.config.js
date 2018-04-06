@@ -8,9 +8,12 @@ module.exports = {
     '<rootDir>/test/_helpers/globals.js',
     'jest-plugin-fs/setup'
   ],
+  timers: 'fake',
   coverageThreshold: {
     global: {
-      functions: 90
+      lines: 100,
+      branches: 100,
+      statements: 100
     }
   }
 }

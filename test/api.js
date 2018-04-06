@@ -392,8 +392,16 @@ describe('api', () => {
   })
 
   describe('auth', () => {
-    beforeEach(() => { api.defaults = { } })
-    afterEach(() => { api.defaults = { } })
+    let oldBufferFrom = Buffer.from
+
+    beforeEach(() => {
+      api.defaults = { }
+    })
+
+    afterEach(() => {
+      api.defaults = { }
+      Buffer.from = oldBufferFrom
+    })
 
     test('hasAuth', () => {
       expect(api.hasAuth()).toBeFalsy()
@@ -413,11 +421,19 @@ describe('api', () => {
       expect(api.defaults.headers).toEqual({ foo: 'bar' })
     })
 
-    test('addAuth basic auth', () => {
+    test('addAuth basic auth >= 5', () => {
       expect(api.hasAuth()).toBeFalsy()
       api.addAuth('foo', 'bar')
       expect(api.hasAuth()).toBeTruthy()
       expect(api.defaults.headers.Authorization).toBe('Basic Zm9vOmJhcg==')
+    })
+
+    test('addAuth basic auth < 5', () => {
+      expect(api.hasAuth()).toBeFalsy()
+      Buffer.from = Uint8Array.from
+      api.addAuth('foo', 'bar')
+      expect(api.hasAuth()).toBeTruthy()
+      expect(api.defaults.headers.Authorization).toBe('Basic AAAAAAAAAA==')
     })
 
     test('addAuth token', () => {

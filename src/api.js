@@ -295,8 +295,13 @@ class PGBApi {
   addAuth(usernameOrToken, password) {
     this.defaults.headers = this.defaults.headers || {}
     if (usernameOrToken && password) {
-      const enc = Buffer.from(`${usernameOrToken}:${password}`).toString('base64')
-      this.defaults.headers.Authorization = `Basic ${enc}`
+      let enc = `${usernameOrToken}:${password}`
+      if (Buffer.from !== Uint8Array.from) {
+        enc = Buffer.from(enc)
+      } else {
+        enc = new Buffer(enc) // eslint-disable-line node/no-deprecated-api
+      }
+      this.defaults.headers.Authorization = `Basic ${enc.toString('base64')}`
     } else if (usernameOrToken) {
       this.defaults.headers.Authorization = `token ${usernameOrToken}`
     }
