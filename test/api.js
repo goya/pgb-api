@@ -84,6 +84,13 @@ describe('api', () => {
       })
     )
 
+    test('updateApp with null fileOrRepo', () =>
+      api.updateApp(12, null, data).then((val) => {
+        expect(restClient.put).lastCalledWith('https://build.phonegap.com/api/v1/apps/12', { data })
+        expect(val).toEqual(ret)
+      })
+    )
+
     test('deleteApp', () =>
       api.deleteApp(12).then((val) => {
         expect(restClient.del).lastCalledWith('https://build.phonegap.com/api/v1/apps/12', { })

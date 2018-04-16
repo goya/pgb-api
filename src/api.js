@@ -148,9 +148,7 @@ class PGBApi {
   }
 
   updateApp(id, fileOrRepo, data) {
-    data = data || {}
-
-    if (typeof fileOrRepo !== 'string') {
+    if (!data && typeof fileOrRepo !== 'string') {
       data = fileOrRepo
       fileOrRepo = null
     }
