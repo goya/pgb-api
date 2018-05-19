@@ -455,4 +455,157 @@ describe('api', () => {
       expect(api.defaults.headers).toEqual({})
     })
   })
+
+  describe('downloads', () => {
+    test('awaitAndDownloadApps success', (done) => {
+      let eventEmitter = new (require('events'))()
+      let api = apiClient({events: eventEmitter})
+
+      eventEmitter.on('downloads/waiting', (evt) => {
+        jest.runOnlyPendingTimers()
+      })
+
+      restClient.get.mockResolvedValueOnce({
+        'completed': false,
+        'errors': {},
+        'status': {
+          'ios': 'complete',
+          'android': 'pending',
+          'winphone': 'skipped'
+        }
+      }).mockResolvedValueOnce(
+        'iosdownload'
+      ).mockResolvedValueOnce({
+        'completed': true,
+        'errors': [],
+        'status': {
+          'ios': 'complete',
+          'android': 'complete',
+          'winphone': 'skipped'
+        }
+      }).mockResolvedValueOnce(
+        'android'
+      )
+      api.awaitAndDownloadApps(12, {}).then((val) => {
+        expect(val).toEqual({
+          'success': {
+            'android': 'android',
+            'ios': 'iosdownload'
+          },
+          'error': {
+            getStatus: null,
+            downloadApp: {},
+            build: {}
+          }
+        })
+        done()
+      })
+    }
+    )
+  })
+
+  test('awaitAndDownloadApps build failure', (done) => {
+    let eventEmitter = new (require('events'))()
+    let api = apiClient({events: eventEmitter})
+
+    eventEmitter.on('downloads/waiting', (evt) => {
+      jest.runOnlyPendingTimers()
+    })
+
+    restClient.get.mockResolvedValueOnce({
+      'completed': false,
+      'errors': {},
+      'status': {
+        'ios': 'pending',
+        'android': 'complete',
+        'winphone': 'skipped'
+      }
+    }).mockResolvedValueOnce(
+      'android'
+    ).mockResolvedValueOnce({
+      'completed': true,
+      'error': {'ios': 'ios_failure'},
+      'status': {
+        'ios': 'error',
+        'android': 'complete',
+        'winphone': 'skipped'
+      }
+    })
+    api.awaitAndDownloadApps(12, {}).catch((val) => {
+      expect(val).toEqual({
+        'success': {
+          'android': 'android'
+        },
+        'error': {
+          getStatus: null,
+          downloadApp: {},
+          build: {'ios': 'ios_failure'}
+        }
+      })
+      done()
+    })
+  })
+
+  test('awaitAndDownloadApps download failure', (done) => {
+    let eventEmitter = new (require('events'))()
+    let api = apiClient({events: eventEmitter})
+
+    eventEmitter.on('downloads/waiting', (evt) => {
+      jest.runOnlyPendingTimers()
+    })
+
+    restClient.get.mockResolvedValueOnce({
+      'completed': false,
+      'error': {},
+      'status': {
+        'ios': 'pending',
+        'android': 'complete',
+        'winphone': 'skipped'
+      }
+    }).mockRejectedValueOnce(
+      'android'
+    ).mockResolvedValueOnce({
+      'completed': true,
+      'error': {'ios': 'ios_failure'},
+      'status': {
+        'ios': 'error',
+        'android': 'complete',
+        'winphone': 'skipped'
+      }
+    })
+    api.awaitAndDownloadApps(12, {}).catch((val) => {
+      expect(val).toEqual({
+        'success': {
+        },
+        'error': {
+          getStatus: null,
+          downloadApp: {'android': 'android'},
+          build: {'ios': 'ios_failure'}
+        }
+      })
+      done()
+    })
+  })
+
+  test('awaitAndDownloadApps status failure', (done) => {
+    // No event emitter to test paths without it
+    // Not required here since we fail early, so no setTimeout which we need to pump
+    // in response to events
+
+    restClient.get.mockRejectedValueOnce(
+      'some problem with status'
+    )
+    api.awaitAndDownloadApps(12, {}, {pollingIntervalMs: 0}).catch((val) => {
+      expect(val).toEqual({
+        'success': {
+        },
+        'error': {
+          getStatus: 'some problem with status',
+          downloadApp: {},
+          build: {}
+        }
+      })
+      done()
+    })
+  })
 })

@@ -63,6 +63,7 @@ pgb.getAppLog(id, platform) // get build log for a single platform
 pgb.downloadApp(id, platform, [path]) // save app to optional path
 pgb.pullApp(id) // pull new version from repo and trigger a build
 pgb.buildApp(id, [platform]) // build app, optionally by single platform
+pbg.awaitAndDownloadApps(id, [{platform: path}], [pollingIntervalMs: number]) // poll for completed builds, and download them when they are ready
 pgb.deleteApp(id) // delete app
 
 /* COLLABORATORS */
