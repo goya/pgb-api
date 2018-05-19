@@ -305,6 +305,117 @@ class PGBApi {
     }
     return this
   }
+
+  /*
+   *  Poll via getStatus for completed platform builds, and download them via downloadApp.
+   *  @param {string} id - phonegab build application identifier.
+   *  @param {object} saves - map: platform -> save, where save is passed to downloadApp when downloading platform.
+   *  @param {object} opts - configuration options
+   *  @return {Promise} - Thenable that executes the poll and download.
+   */
+  awaitAndDownloadApps(id, saves, opts) {
+    const pollingIntervalMs = (opts && (undefined !== opts.pollingIntervalMs))
+      ? opts.pollingIntervalMs
+      : 1000
+
+    let state = {
+      allBuildsFinished: false,
+      buildFinished: {},
+      activeDownloads: 0,
+      errorEncountered: false,
+      returnValue: {
+        success: {},
+        error: {
+          getStatus: null,
+          downloadApp: {},
+          build: {}
+        }
+      }
+    }
+
+    const emit = (evt, data) => {
+      if (this.defaults.events && this.defaults.events.emit) {
+        this.defaults.events.emit(evt, data)
+      }
+    }
+
+    let pollAndDownload = (resolve, reject) => {
+      const resolveOrReject = () => {
+        if (state.errorEncountered) {
+          reject(state.returnValue)
+        } else {
+          resolve(state.returnValue)
+        }
+      }
+
+      let pollOnce = () => {
+        emit('downloads/polling', {})
+        this.getStatus(id).then((result) => {
+          emit('downloads/status', result)
+          let status = result.status
+          for (let platform in status) {
+            // The first time we see a complete build, start to download it.
+            if (!state.buildFinished[platform] && status[platform] === 'complete') {
+              const downloadPlatform = platform // closure
+              state.buildFinished[downloadPlatform] = true
+
+              state.activeDownloads++
+              emit('downloads/starting', downloadPlatform)
+              this.downloadApp(id, downloadPlatform, saves && saves[downloadPlatform]).then((ret) => {
+                state.returnValue.success[downloadPlatform] = ret
+                emit('downloads/sucess', {
+                  'platform': downloadPlatform,
+                  'return': ret
+                })
+              }).catch((err) => {
+                state.errorEncountered = true
+
+                state.returnValue.error.downloadApp[downloadPlatform] = err
+                emit('downloads/error', {
+                  'platform': downloadPlatform,
+                  'error': err
+                })
+              }).finally(() => {
+                state.activeDownloads--
+                // Last download to complete resolves or rejects the promise.
+                if (state.allBuildsFinished && state.activeDownloads === 0) {
+                  resolveOrReject()
+                }
+              })
+            } else if (!state.buildFinished[platform] && status[platform] === 'error') {
+              state.buildFinished[platform] = true
+              state.errorEncountered = true
+              state.returnValue.error.build[platform] = result.error[platform]
+              emit('downloads/buildError', {[platform]: result.error[platform]})
+            }
+          }
+
+          if (result.completed) {
+            // Raise flag for completed downloads to pick up
+            state.allBuildsFinished = true
+          }
+        }).catch((err) => {
+          state.errorEncountered = true
+          state.allBuildsFinished = true
+          state.returnValue.error.getStatus = err
+        }).finally(() => {
+          if (state.allBuildsFinished) {
+            if (state.activeDownloads === 0) {
+              resolveOrReject()
+            }
+          } else {
+            // try again
+            const timeoutID = setTimeout(pollOnce, pollingIntervalMs)
+            emit('downloads/waiting', {'timeoutID': timeoutID})
+          }
+        })
+      }
+
+      pollOnce()
+    }
+
+    return new Promise(pollAndDownload)
+  };
 }
 
 module.exports = (opts) => new PGBApi(opts)
