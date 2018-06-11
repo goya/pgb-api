@@ -7,6 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const Stream = require('stream').Stream
 const version = require('../package.json').version
+const https = require('https')
 
 const defaultOpts = {
   headers: {
@@ -56,15 +57,12 @@ const request = (url, opts) => {
     // add ctx.opts.data to the request object
     addRequestPayload(ctx)
 
-    // grab proper transport
-    const transport = (ctx.opts.protocol === 'https:') ? require('https') : require('http')
-
     // emit headers event
     emit(ctx, 'api/headers', ctx.opts.headers)
     emit(ctx, 'debug', `${ctx.opts.method || 'GET'} ${url}`)
 
     // do the request
-    ctx.req = transport.request(ctx.opts, (response) => {
+    ctx.req = https.request(ctx.opts, (response) => {
       ctx.response = response
       let size = Number.parseInt(response['headers']['content-length']) || null
       let status = Math.trunc(response.statusCode / 100)

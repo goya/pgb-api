@@ -5,6 +5,10 @@ const app = server.listen(3000, '0.0.0.0')
 const reqs = jest.spyOn(server, 'requestLogger')
 const lastReq = () => reqs.mock.calls[reqs.mock.calls.length - 1][0]
 
+jest.mock('https', () => {
+  return require('http')
+})
+
 afterEach(() => {
   jest.clearAllMocks()
 })
