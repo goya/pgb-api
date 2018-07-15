@@ -21,7 +21,7 @@ const defaultOpts = {
 const parseBody = (ctx) => {
   let body, json
 
-  if (ctx.output instanceof TextStream) {
+  if (ctx.output.constructor === TextStream) {
     body = ctx.output.toString()
     try {
       json = JSON.parse(body)
