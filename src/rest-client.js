@@ -6,6 +6,7 @@ const urlParse = require('url')
 const fs = require('fs')
 const path = require('path')
 const Stream = require('stream').Stream
+const tunnel = require('./tunnel')
 const https = require('https')
 
 const defaultOpts = {
@@ -52,6 +53,7 @@ const request = (url, opts) => {
     // combine options into a single options object
     let parsedUrl = urlParse.parse(url) // eslint-disable-line node/no-deprecated-api
     ctx.opts = merge(defaultOpts, parsedUrl, opts)
+    ctx.opts.port = ctx.opts.port || 443
 
     // add ctx.opts.data to the request object
     addRequestPayload(ctx)
@@ -59,6 +61,10 @@ const request = (url, opts) => {
     // emit headers event
     emit(ctx, 'api/headers', ctx.opts.headers)
     emit(ctx, 'debug', `${ctx.opts.method || 'GET'} ${url}`)
+
+    if ('proxy' in opts || (opts.proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY)) {
+      if (opts.proxy) ctx.opts.agent = tunnel(opts.proxy, ctx.opts.events)
+    }
 
     // do the request
     ctx.req = https.request(ctx.opts, (response) => {
