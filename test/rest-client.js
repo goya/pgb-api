@@ -65,7 +65,7 @@ describe('#get', () => {
 
   test('should handle json', () =>
     restClient.get('http://localhost:3000/json')
-      .then((response) => expect(response).toEqual({key: 12}))
+      .then((response) => expect(response).toEqual({ key: 12 }))
   )
 
   test('should handle 404', (done) =>

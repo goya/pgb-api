@@ -28,10 +28,10 @@ describe('zipper', () => {
     test('should return files', () => {
       let result = {
         list: [
-          {'path': '/app_to_zip/.pgb_dont_delete_me', 'size': 2},
-          {'path': '/app_to_zip/cordova.js', 'size': 4},
-          {'path': '/app_to_zip/index.html', 'size': 3},
-          {'path': '/app_to_zip/res', 'size': 0}
+          { 'path': '/app_to_zip/.pgb_dont_delete_me', 'size': 2 },
+          { 'path': '/app_to_zip/cordova.js', 'size': 4 },
+          { 'path': '/app_to_zip/index.html', 'size': 3 },
+          { 'path': '/app_to_zip/res', 'size': 0 }
         ],
         skipped: [ '/app_to_zip/.delete_me [HIDDEN]' ]
       }
@@ -86,7 +86,7 @@ describe('zipper', () => {
 
         return zipper.zipDir('/app_to_zip', '/app2.zip', eventEmitter).then((val) => {
           expect(fs.existsSync('/app2.zip')).toBeTruthy()
-          expect(lastProgress).toEqual({'delta': 109, 'file': 'index.html', 'pos': 236, 'size': 236})
+          expect(lastProgress).toEqual({ 'delta': 109, 'file': 'index.html', 'pos': 236, 'size': 236 })
         })
       })
     })

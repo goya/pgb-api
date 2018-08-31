@@ -205,7 +205,7 @@ describe('api', () => {
       return api.addApp('/app.zip', data).then((val) => {
         let result = restClient.post.mock.calls[0]
         expect(result[0]).toBe('https://build.phonegap.com/api/v1/apps')
-        expect(result[1]).toMatchObject({data: { hydrates: true, file: { path: '/app.zip' } }})
+        expect(result[1]).toMatchObject({ data: { hydrates: true, file: { path: '/app.zip' } } })
         expect(val).toEqual(ret)
       })
     })
@@ -223,7 +223,7 @@ describe('api', () => {
       return api.addApp('http://%5:glams@google.com/foo/bar', data).then((val) => {
         let result = restClient.post.mock.calls[0]
         expect(result[0]).toBe('https://build.phonegap.com/api/v1/apps')
-        expect(result[1]).toMatchObject({data: { hydrates: true, file: { path: 'http://%5:glams@google.com/foo/bar' } }})
+        expect(result[1]).toMatchObject({ data: { hydrates: true, file: { path: 'http://%5:glams@google.com/foo/bar' } } })
         expect(val).toEqual(ret)
       })
     })
@@ -278,7 +278,7 @@ describe('api', () => {
         test('should emit events', () => {
           expect.assertions(6)
           let eventEmitter = new (require('events'))()
-          let api = apiClient({events: eventEmitter})
+          let api = apiClient({ events: eventEmitter })
           let debug = []
 
           eventEmitter.on('debug', (evt) => {
@@ -312,7 +312,7 @@ describe('api', () => {
       return api.updateApp(12, '/app.zip', data).then((val) => {
         let result = restClient.put.mock.calls[0]
         expect(result[0]).toBe('https://build.phonegap.com/api/v1/apps/12')
-        expect(result[1]).toMatchObject({data: { hydrates: true, file: { path: '/app.zip' } }})
+        expect(result[1]).toMatchObject({ data: { hydrates: true, file: { path: '/app.zip' } } })
         expect(val).toEqual(ret)
       })
     })
@@ -349,7 +349,7 @@ describe('api', () => {
       return api.addWindowsKey('a title', '/cert.keystore', { password: 'abc' }).then((val) => {
         let result = restClient.post.mock.calls[0]
         expect(result[0]).toBe('https://build.phonegap.com/api/v1/keys/windows')
-        expect(result[1]).toMatchObject({data: { keystore: { path: '/cert.keystore' }, password: 'abc' }})
+        expect(result[1]).toMatchObject({ data: { keystore: { path: '/cert.keystore' }, password: 'abc' } })
         expect(val).toEqual(ret)
       })
     })
@@ -360,7 +360,7 @@ describe('api', () => {
       return api.addAndroidKey('a title', 'an alias', '/cert.keystore', { keystore_pw: 'abc', key_pw: 'xyz' }).then((val) => {
         let result = restClient.post.mock.calls[0]
         expect(result[0]).toBe('https://build.phonegap.com/api/v1/keys/android')
-        expect(result[1]).toMatchObject({data: { keystore: { path: '/cert.keystore' }, keystore_pw: 'abc', key_pw: 'xyz', alias: 'an alias' }})
+        expect(result[1]).toMatchObject({ data: { keystore: { path: '/cert.keystore' }, keystore_pw: 'abc', key_pw: 'xyz', alias: 'an alias' } })
         expect(val).toEqual(ret)
       })
     })
