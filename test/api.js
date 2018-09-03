@@ -114,16 +114,44 @@ describe('api', () => {
       })
     )
 
-    test('buildApp with platform', () =>
+    test('buildApp with single platform', () =>
       api.buildApp(12, 'ios').then((val) => {
-        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build/ios', { })
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': 'ios' } })
+        expect(val).toEqual(ret)
+      })
+    )
+
+    test('buildApp with single platform array', () =>
+      api.buildApp(12, ['ios']).then((val) => {
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': 'ios' } })
+        expect(val).toEqual(ret)
+      })
+    )
+
+    test('buildApp with platform array', () =>
+      api.buildApp(12, ['ios', 'windows']).then((val) => {
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': 'ios,windows' } })
+        expect(val).toEqual(ret)
+      })
+    )
+
+    test('buildApp with platform array string', () =>
+      api.buildApp(12, 'ios,windows').then((val) => {
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': 'ios,windows' } })
+        expect(val).toEqual(ret)
+      })
+    )
+
+    test('buildApp with platform as separate arguments', () =>
+      api.buildApp(12, 'ios', 'windows').then((val) => {
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': 'ios,windows' } })
         expect(val).toEqual(ret)
       })
     )
 
     test('buildApp without platform', () =>
       api.buildApp(12).then((val) => {
-        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build/', { })
+        expect(restClient.post).lastCalledWith('https://build.phonegap.com/api/v1/apps/12/build', { 'data': { 'platforms': '' } })
         expect(val).toEqual(ret)
       })
     )

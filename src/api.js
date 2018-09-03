@@ -80,8 +80,10 @@ class PGBApi {
     return this._get(`/apps/${id}/${platform}`, { save })
   }
 
-  buildApp(id, platform) {
-    return this._post(`/apps/${id}/build/${platform || ''}`)
+  buildApp(id) {
+    let platforms = [].slice.call(arguments).slice(1)
+    platforms = [].concat.apply([], platforms).join(',')
+    return this._post(`/apps/${id}/build`, { data: { platforms } })
   }
 
   /**
