@@ -1,7 +1,7 @@
 const restClient = require('../src/rest-client')
-const zipper = require('../src/zipper')
+const zipper = require('../src/zip')
 jest.mock('../src/rest-client')
-jest.mock('../src/zipper')
+jest.mock('../src/zip')
 const apiClient = require('../src/api')
 const fs = require('fs')
 const os = require('os')
@@ -261,7 +261,7 @@ describe('api', () => {
         os.tmpdir = jest.fn().mockImplementation(() => '/tmp')
         fs.mkdirSync('/tmp')
         fs.mkdirSync('/app_to_zip')
-        zipper.zipDir.mockImplementation((src, dest) => {
+        zipper.mockImplementation((src, dest) => {
           fs.writeFileSync(dest)
           return Promise.resolve()
         })
@@ -326,7 +326,7 @@ describe('api', () => {
       })
 
       test('zip dir and add app with bad files', (done) => {
-        zipper.zipDir.mockImplementation((src, dest) => Promise.reject(new Error('zip failed')))
+        zipper.mockImplementation((src, dest) => Promise.reject(new Error('zip failed')))
 
         return api.addApp('/app_to_zip', { hydrates: true }).catch((val) => {
           expect(val).toEqual(new Error('zip failed'))

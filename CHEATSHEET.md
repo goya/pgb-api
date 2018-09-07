@@ -41,6 +41,7 @@ pgb.currentSupport() // get list of supported phonegap versions
 
 let appData = { /* all optional */
   zip: pathForSavedZipFile, /* save zip here instead of /tmp */
+  ignore: [ ], /* array of path globs specifying directories not to upload */
   private: true|false, 
   share: true|false,
   tag: 'master',

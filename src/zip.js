@@ -1,44 +1,11 @@
 const fs = require('fs')
 const yazl = require('yazl')
 const path = require('path')
+const glob = require('./glob').glob
 
-const getFileList = (dir) => {
-  let list = []
-  let skipped = []
-
-  let walkSync = dir => {
-    let files = fs.readdirSync(dir)
-
-    files.forEach(file => {
-      let fullPath = path.join(dir, file)
-      if (file.startsWith('.') && !file.match(/^\.pgb/)) {
-        skipped.push(`${fullPath} [HIDDEN]`)
-        return
-      }
-
-      try {
-        let stat = fs.statSync(fullPath)
-        fs.closeSync(fs.openSync(fullPath, 'r'))
-
-        if (stat.isDirectory()) {
-          list.push({ path: fullPath, size: 0 })
-          walkSync(fullPath)
-        } else {
-          list.push({ path: fullPath, size: stat.size })
-        }
-      } catch (e) {
-        skipped.push(`${fullPath} [${e.code}]`)
-      }
-    })
-  }
-
-  walkSync(dir)
-  return { list, skipped }
-}
-
-const zipDir = (dir, dest, eventEmitter) => {
+const zipDir = (dir, dest, eventEmitter, ignore) => {
   return new Promise((resolve, reject) => {
-    let fileList = getFileList(dir)
+    let files = glob(dir, ignore)
     let stream = fs.createWriteStream(dest)
     let zip = new yazl.ZipFile()
     let file = ''
@@ -51,9 +18,9 @@ const zipDir = (dir, dest, eventEmitter) => {
       if (eventEmitter) eventEmitter.emit(evt, data)
     }
 
-    emit('zip/files', fileList)
+    emit('zip/files', files)
 
-    for (let f of fileList.list) {
+    for (let f of files.list) {
       let pathInArchive = path.relative(dir, f.path)
       if (fs.statSync(f.path).isDirectory()) {
         zip.addEmptyDirectory(pathInArchive)
@@ -102,4 +69,4 @@ const zipDir = (dir, dest, eventEmitter) => {
   })
 }
 
-module.exports = { getFileList, zipDir }
+module.exports = zipDir

@@ -4,7 +4,7 @@ const merge = require('./misc').merge
 const getPath = require('./misc').getPath
 const mkdirp = require('./misc').mkdirp
 const rest = require('./rest-client')
-const zipper = require('./zipper')
+const zip = require('./zip')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
@@ -171,8 +171,12 @@ class PGBApi {
   addAppFromDir(id, dir, data) {
     return new Promise((resolve, reject) => {
       let cleanup = false
+
       let filePath = data.zip
       delete data.zip
+
+      let ignore = data.ignore || []
+      delete data.ignore
 
       if (!filePath) {
         filePath = path.join(os.tmpdir(), 'pgb-' + Math.random().toString(32).slice(2) + '.zip')
@@ -199,7 +203,7 @@ class PGBApi {
       }
 
       emit('debug', `archiving ${dir} to ${filePath}`)
-      zipper.zipDir(dir, filePath, this.defaults.events)
+      zip(dir, filePath, this.defaults.events, ignore)
         .then(() => this.addAppFromFile(id, filePath, data))
         .then((app) => {
           deleteZip()

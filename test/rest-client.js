@@ -3,6 +3,7 @@ const fs = require('fs')
 const server = require('./_helpers/fake-server')
 const app = server.listen(3000, '0.0.0.0')
 const reqs = jest.spyOn(server, 'requestLogger')
+const version = require('../package.json').version
 const lastReq = () => reqs.mock.calls[reqs.mock.calls.length - 1][0]
 
 jest.mock('https', () => {
@@ -27,18 +28,13 @@ describe('rest-client', () => {
 })
 
 describe('#get', () => {
-  test('use http for http url and https for https url', () => {
-    let spy1 = jest.spyOn(require('http'), 'request')
-    let spy2 = jest.spyOn(require('https'), 'request')
-
-    return restClient.get('http://localhost:3000/page1')
-      .then((response) => expect(response).toBe('A page'))
-      .then(() => expect(spy1).toBeCalled())
-      .then(() => restClient.get('https://localhost:3000/page1'))
-      .then((response) => expect(response).toBe('A page'))
-      .catch(() => { /* it will fail the get */ })
-      .then(() => expect(spy2).toBeCalled())
-  })
+  test('should populate user-agent (remember to manually update the user-agent!!!)', () =>
+    restClient.get('http://localhost:3000/page1')
+      .then((response) => {
+        let userAgent = `pgb-api/${version} node/${process.version} (${process.platform})`
+        expect(reqs.mock.calls[0][0].headers['user-agent']).toEqual(userAgent)
+      })
+  )
 
   test('should get simple html', () =>
     restClient.get('http://localhost:3000/page1')
