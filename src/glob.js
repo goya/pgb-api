@@ -11,10 +11,10 @@ const glob = (root, ignoreGlobs) => {
 
     files.forEach(file => {
       let fullPath = path.join(dir, file)
-      let globPath = path.resolve(fullPath).replace(path.resolve(root) + '/', '')
+      let relPath = path.relative(root, fullPath)
 
       if (file.startsWith('.') && !file.match(/^\.pgb/)) {
-        skipped.push(`${fullPath} [HIDDEN]`)
+        skipped.push(`${relPath} [HIDDEN]`)
         return
       }
 
@@ -22,25 +22,25 @@ const glob = (root, ignoreGlobs) => {
         let stat = fs.statSync(fullPath)
         fs.closeSync(fs.openSync(fullPath, 'r'))
 
-        let ignored = filter(globPath, stat.isDirectory(), globRegexes)
+        let ignore = filter(relPath, stat.isDirectory(), globRegexes)
 
         if (stat.isDirectory()) {
-          if (ignored) {
-            skipped.push(`${fullPath}/ [IGNORED]`)
+          if (ignore) {
+            skipped.push(`${relPath}${path.sep} [IGNORED]`)
           } else {
-            list.push({ path: fullPath, size: 0 })
+            list.push({ path: relPath, size: 0 })
             walkSync(fullPath)
           }
         } else {
-          if (ignored) {
-            skipped.push(`${fullPath} [IGNORED]`)
+          if (ignore) {
+            skipped.push(`${relPath} [IGNORED]`)
           } else {
-            list.push({ path: fullPath, size: stat.size })
+            list.push({ path: relPath, size: stat.size })
           }
           list.push()
         }
       } catch (e) {
-        skipped.push(`${fullPath} [${e.code}]`)
+        skipped.push(`${relPath} [${e.code}]`)
       }
     })
   }
@@ -52,7 +52,7 @@ const glob = (root, ignoreGlobs) => {
 const toGlobRegex = (glob) => {
   if (glob == null || glob[0] === '#' || glob.trim() === '') return null
 
-  let negation = glob.indexOf('!') === 0
+  let not = glob.indexOf('!') === 0
   let dir = false
 
   if (glob.endsWith('/')) {
@@ -60,7 +60,7 @@ const toGlobRegex = (glob) => {
     dir = true
   }
 
-  if (negation || glob[0] === '/') {
+  if (not || glob[0] === '/') {
     glob = glob.slice(1)
   }
 
@@ -76,11 +76,13 @@ const toGlobRegex = (glob) => {
     glob = glob + '/?'
   }
 
-  return { dir, negation, regex: new RegExp(`^${glob}$`) }
+  return { dir, not, regex: new RegExp(`^${glob}$`) }
 }
 
 const filter = (filePath, isDir, globRegexes) => {
   let result = false
+
+  filePath = filePath.split(path.sep).join('/')
 
   for (let globRegex of globRegexes) {
     if (globRegex == null) continue
@@ -89,9 +91,9 @@ const filter = (filePath, isDir, globRegexes) => {
 
     if (globRegex.regex.test(filePath)) {
       if (globRegex.dir && isDir) {
-        return !globRegex.negation
+        return !globRegex.not
       }
-      result = !globRegex.negation
+      result = !globRegex.not
     }
   }
   return result

@@ -27,12 +27,12 @@ describe('glob', () => {
   test('should return files', () => {
     let result = {
       list: [
-        { 'path': '/app_to_zip/.pgb_dont_delete_me', 'size': 2 },
-        { 'path': '/app_to_zip/cordova.js', 'size': 4 },
-        { 'path': '/app_to_zip/index.html', 'size': 3 },
-        { 'path': '/app_to_zip/res', 'size': 0 }
+        { 'path': '.pgb_dont_delete_me', 'size': 2 },
+        { 'path': 'cordova.js', 'size': 4 },
+        { 'path': 'index.html', 'size': 3 },
+        { 'path': 'res', 'size': 0 }
       ],
-      skipped: [ '/app_to_zip/.delete_me [HIDDEN]' ]
+      skipped: [ '.delete_me [HIDDEN]' ]
     }
     expect(glob.glob('/app_to_zip')).toEqual(result)
   })
@@ -44,11 +44,11 @@ describe('glob', () => {
     fs.openSync = jest.fn().mockImplementation(() => { throw error })
     let result = {
       skipped: [
-        '/app_to_zip/.delete_me [HIDDEN]',
-        '/app_to_zip/.pgb_dont_delete_me [ENOENT]',
-        '/app_to_zip/cordova.js [ENOENT]',
-        '/app_to_zip/index.html [ENOENT]',
-        '/app_to_zip/res [ENOENT]'
+        '.delete_me [HIDDEN]',
+        '.pgb_dont_delete_me [ENOENT]',
+        'cordova.js [ENOENT]',
+        'index.html [ENOENT]',
+        'res [ENOENT]'
       ],
       list: [ ]
     }
@@ -59,10 +59,10 @@ describe('glob', () => {
   test('should skip ignored files', () => {
     let result = {
       list: [
-        { 'path': '/app_to_zip/.pgb_dont_delete_me', 'size': 2 },
-        { 'path': '/app_to_zip/cordova.js', 'size': 4 }
+        { 'path': '.pgb_dont_delete_me', 'size': 2 },
+        { 'path': 'cordova.js', 'size': 4 }
       ],
-      skipped: [ '/app_to_zip/.delete_me [HIDDEN]', '/app_to_zip/index.html [IGNORED]', '/app_to_zip/res/ [IGNORED]' ]
+      skipped: [ '.delete_me [HIDDEN]', 'index.html [IGNORED]', 'res/ [IGNORED]' ]
     }
     expect(glob.glob('/app_to_zip', [ '**/*.html', 'res/' ])).toEqual(result)
   })
@@ -73,12 +73,12 @@ describe('toGlobRegex', () => {
     expect(glob.toGlobRegex('')).toEqual(null)
     expect(glob.toGlobRegex(null)).toEqual(null)
     expect(glob.toGlobRegex('# comment')).toEqual(null)
-    expect(glob.toGlobRegex('shell')).toEqual({ 'dir': false, 'negation': false, 'regex': /^shell\/?$/ })
-    expect(glob.toGlobRegex('dir/')).toEqual({ 'dir': true, 'negation': false, 'regex': /^dir\/?$/ })
-    expect(glob.toGlobRegex('dir/**')).toEqual({ 'dir': false, 'negation': false, 'regex': /^dir\/.*$/ })
-    expect(glob.toGlobRegex('/dir')).toEqual({ 'dir': false, 'negation': false, 'regex': /^dir\/?$/ })
-    expect(glob.toGlobRegex('!not_me')).toEqual({ 'dir': false, 'negation': true, 'regex': /^not_me\/?$/ })
-    expect(glob.toGlobRegex('(.moot?[]+)')).toEqual({ 'dir': false, 'negation': false, 'regex': /^\(\.moot.\[\]\+\)\/?$/ })
+    expect(glob.toGlobRegex('shell')).toEqual({ 'dir': false, 'not': false, 'regex': /^shell\/?$/ })
+    expect(glob.toGlobRegex('dir/')).toEqual({ 'dir': true, 'not': false, 'regex': /^dir\/?$/ })
+    expect(glob.toGlobRegex('dir/**')).toEqual({ 'dir': false, 'not': false, 'regex': /^dir\/.*$/ })
+    expect(glob.toGlobRegex('/dir')).toEqual({ 'dir': false, 'not': false, 'regex': /^dir\/?$/ })
+    expect(glob.toGlobRegex('!not_me')).toEqual({ 'dir': false, 'not': true, 'regex': /^not_me\/?$/ })
+    expect(glob.toGlobRegex('(.moot?[]+)')).toEqual({ 'dir': false, 'not': false, 'regex': /^\(\.moot.\[\]\+\)\/?$/ })
   })
 })
 
@@ -86,9 +86,9 @@ describe('filter', () => {
   test('should skip ignored files', () => {
     expect(glob.filter('', true, [])).toEqual(false)
     expect(glob.filter('', true, [null])).toEqual(false)
-    expect(glob.filter('rabbit', true, [{ dir: true, negation: false, regex: /^rabbit\/?$/ }])).toEqual(true)
-    expect(glob.filter('rabbit', true, [{ dir: false, negation: false, regex: /^rabbit\/?$/ }])).toEqual(true)
-    expect(glob.filter('rabbit', true, [{ dir: true, negation: true, regex: /^rabbit$/ }])).toEqual(false)
-    expect(glob.filter('rabbit', false, [{ dir: true, negation: false, regex: /^rabbit\/?$/ }])).toEqual(false)
+    expect(glob.filter('rabbit', true, [{ dir: true, not: false, regex: /^rabbit\/?$/ }])).toEqual(true)
+    expect(glob.filter('rabbit', true, [{ dir: false, not: false, regex: /^rabbit\/?$/ }])).toEqual(true)
+    expect(glob.filter('rabbit', true, [{ dir: true, not: true, regex: /^rabbit$/ }])).toEqual(false)
+    expect(glob.filter('rabbit', false, [{ dir: true, not: false, regex: /^rabbit\/?$/ }])).toEqual(false)
   })
 })

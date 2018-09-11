@@ -10,7 +10,7 @@ const https = require('https')
 
 const defaultOpts = {
   headers: {
-    'User-Agent': `pgb-api/1.1.0 node/${process.version} (${process.platform})`
+    'User-Agent': `pgb-api/1.1.1 node/${process.version} (${process.platform})`
   }
 }
 

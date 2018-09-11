@@ -21,13 +21,14 @@ const zipDir = (dir, dest, eventEmitter, ignore) => {
     emit('zip/files', files)
 
     for (let f of files.list) {
-      let pathInArchive = path.relative(dir, f.path)
-      if (fs.statSync(f.path).isDirectory()) {
-        zip.addEmptyDirectory(pathInArchive)
-        size += 46 + pathInArchive.length + 1
+      let fullPath = path.resolve(path.join(dir, f.path))
+
+      if (fs.statSync(fullPath).isDirectory()) {
+        zip.addEmptyDirectory(f.path)
+        size += 46 + f.path.length + 1
       } else {
-        zip.addFile(f.path, pathInArchive)
-        size += 46 + pathInArchive.length
+        zip.addFile(fullPath, f.path)
+        size += 46 + f.path.length
       }
       cumulativeSize.push(size += f.size)
     }
