@@ -14,6 +14,10 @@ module.exports = {
       lines: 100,
       branches: 100,
       statements: 100
+    },
+    'src/tunnel.js': {
+      'branches': 15,
+      'statements': 20
     }
   }
 }

@@ -10,6 +10,7 @@ const tunnel = require('./tunnel')
 const https = require('https')
 
 const defaultOpts = {
+  port: 443,
   headers: {
     'User-Agent': `pgb-api/1.1.2 node/${process.version} (${process.platform})`
   }
@@ -65,7 +66,7 @@ const request = (url, opts) => {
     if ('proxy' in opts || (opts.proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY)) {
       if (opts.proxy) ctx.opts.agent = tunnel(opts.proxy, ctx.opts.events)
     }
-
+console.log(ctx.opts.agent)
     // do the request
     ctx.req = https.request(ctx.opts, (response) => {
       ctx.response = response
@@ -137,6 +138,8 @@ const request = (url, opts) => {
       //  2. emit end event with response hash
       //  3. depending on status resolve / reject promise
       response.once('end', () => {
+        console.log(ctx.opts.agent.destroy)
+        ctx.opts.agent && ctx.opts.agent.destroy && ctx.opts.agent.destroy()
         let parsed = parseBody(ctx)
         if (status === 2) {
           resolve(parsed)

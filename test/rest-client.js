@@ -5,6 +5,9 @@ const app = server.listen(3000, '0.0.0.0')
 const reqs = jest.spyOn(server, 'requestLogger')
 const version = require('../package.json').version
 const lastReq = () => reqs.mock.calls[reqs.mock.calls.length - 1][0]
+const oldEnv = process.env
+const tunnel = require('../src/tunnel')
+jest.mock('../src/tunnel')
 
 jest.mock('https', () => {
   return require('http')
@@ -12,6 +15,7 @@ jest.mock('https', () => {
 
 afterEach(() => {
   jest.clearAllMocks()
+  process.env = oldEnv
 })
 
 afterAll(() => {
@@ -162,6 +166,38 @@ describe('#put', () => {
         expect(file.size).toBe(17)
         expect(file.mimetype).toBe('application/octet-stream')
         expect(file.originalname).toBe('app.zip')
+      })
+  })
+})
+
+describe('agent', () => {
+  test('should not use agent by default', () =>
+    restClient.get('http://localhost:3000/page1')
+      .then((response) => {
+        expect(tunnel).not.toBeCalled()
+      })
+  )
+
+  test('should use agent with tunnel from opts', () =>
+    restClient.get('http://localhost:3000/page1', { proxy: 'http://proxy.com:1111' })
+      .then((response) => {
+        expect(tunnel).toBeCalledWith('http://proxy.com:1111', undefined)
+      })
+  )
+
+  test('should use agent with tunnel from HTTP_PROXY', () => {
+    process.env['HTTP_PROXY'] = 'http://proxy.com:2222'
+    return restClient.get('http://localhost:3000/page1')
+      .then((response) => {
+        expect(tunnel).toBeCalledWith('http://proxy.com:2222', undefined)
+      })
+  })
+
+  test('should use agent with tunnel from HTTPS_PROXY', () => {
+    process.env['HTTPS_PROXY'] = 'http://proxy.com:3333'
+    return restClient.get('http://localhost:3000/page1')
+      .then((response) => {
+        expect(tunnel).toBeCalledWith('http://proxy.com:3333', undefined)
       })
   })
 })
