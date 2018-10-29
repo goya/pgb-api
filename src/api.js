@@ -8,12 +8,13 @@ const zip = require('./zip')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
-const urlParse = require('url').parse
-const baseUrl = 'https://build.phonegap.com/api/v1'
+const urlParse = require('url').parse // eslint-disable-line node/no-deprecated-api
 
 class PGBApi {
   constructor(defaults) {
     this.defaults = merge(defaults)
+    this.baseUrl = this.defaults.baseUrl || 'https://build.phonegap.com/api/v1'
+    delete this.defaults.baseUrl
   }
 
   /**
@@ -21,19 +22,19 @@ class PGBApi {
    */
 
   _get(path, opts) {
-    return rest.get(baseUrl + path, merge(this.defaults, opts))
+    return rest.get(this.baseUrl + path, merge(this.defaults, opts))
   }
 
   _post(path, opts) {
-    return rest.post(baseUrl + path, merge(this.defaults, opts))
+    return rest.post(this.baseUrl + path, merge(this.defaults, opts))
   }
 
   _put(path, opts) {
-    return rest.put(baseUrl + path, merge(this.defaults, opts))
+    return rest.put(this.baseUrl + path, merge(this.defaults, opts))
   }
 
   _del(path, opts) {
-    return rest.del(baseUrl + path, merge(this.defaults, opts))
+    return rest.del(this.baseUrl + path, merge(this.defaults, opts))
   }
 
   /**

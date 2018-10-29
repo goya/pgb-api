@@ -10,7 +10,7 @@ const https = require('https')
 
 const defaultOpts = {
   headers: {
-    'User-Agent': `pgb-api/1.1.1 node/${process.version} (${process.platform})`
+    'User-Agent': `pgb-api/1.1.2 node/${process.version} (${process.platform})`
   }
 }
 
@@ -50,7 +50,7 @@ const request = (url, opts) => {
     let ctx = {}
 
     // combine options into a single options object
-    let parsedUrl = urlParse.parse(url)
+    let parsedUrl = urlParse.parse(url) // eslint-disable-line node/no-deprecated-api
     ctx.opts = merge(defaultOpts, parsedUrl, opts)
 
     // add ctx.opts.data to the request object
@@ -68,13 +68,13 @@ const request = (url, opts) => {
 
       // handle redirection requests
       if (status === 3 && 'location' in response.headers) {
-        let location = urlParse.parse(response.headers['location'])
+        let location = urlParse.parse(response.headers['location']) // eslint-disable-line node/no-deprecated-api
 
         if (opts.headers && ctx.opts.hostname !== location.hostname) {
           delete opts.headers.Authorization
         }
 
-        location = urlParse.resolve(url, location.href)
+        location = urlParse.resolve(url, location.href) // eslint-disable-line node/no-deprecated-api
         emit(ctx, 'debug', `${ctx.req.method} ${url} -> ${response.statusCode} ${location}`)
         return resolve(request(location, opts))
       }
